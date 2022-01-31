@@ -30,11 +30,13 @@ const SearchBooks = () => {
   // learn more here: https://reactjs.org/docs/hooks-effect.html#effects-with-cleanup
 
   const [saveBook, { data, loading }] = useMutation(SAVE_BOOK);
-  const books = data?.books || [];
+  const book = data?.books || [];
 
   // create method to search for books and set state on form submit
   const handleFormSubmit = async (event) => {
     event.preventDefault();
+
+    saveBook({ variables: { book } });
 
     if (!searchInput) {
       return false;
@@ -76,8 +78,7 @@ const SearchBooks = () => {
     //     <h4>
     //       You need to be logged in to save a book. Use the navigation links above to sign up or log in!
     //     </h4>
-      // );
-    };
+    // );
 
     // find the book in `searchedBooks` state by the matching id
     const bookToSave = searchedBooks.find((book) => book.bookId === book._Id);
@@ -101,7 +102,7 @@ const SearchBooks = () => {
     } catch (err) {
       console.error(err);
     }
-
+  };
 
   return (
     <>
