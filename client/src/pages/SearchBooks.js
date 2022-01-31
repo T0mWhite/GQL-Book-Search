@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
   Jumbotron,
   Container,
@@ -12,10 +12,10 @@ import {
 import { useMutation } from "@apollo/client";
 import { SAVE_BOOK } from "../utils/mutations";
 
-import { saveBook, searchGoogleBooks } from "../utils/API";
+import { searchGoogleBooks } from "../utils/API";
 
 import Auth from "../utils/auth";
-import { saveBookIds, getSavedBookIds } from "../utils/localStorage";
+import { getSavedBookIds } from "../utils/localStorage";
 
 const SearchBooks = () => {
   // create state for holding returned google api data
@@ -29,7 +29,7 @@ const SearchBooks = () => {
   // set up useEffect hook to save `savedBookIds` list to localStorage on component unmount
   // learn more here: https://reactjs.org/docs/hooks-effect.html#effects-with-cleanup
 
-  const [saveBook, { data, loading, error }] = useMutation(SAVE_BOOK);
+  const [saveBook, { data, loading }] = useMutation(SAVE_BOOK);
   const books = data?.books || [];
 
   // create method to search for books and set state on form submit
@@ -50,7 +50,7 @@ const SearchBooks = () => {
       const { items } = await response.json();
 
       const bookData = items.map((book) => ({
-        bookId: book.id,
+        bookId: book._id,
         authors: book.volumeInfo.authors || ["No author to display"],
         title: book.volumeInfo.title,
         description: book.volumeInfo.description,
@@ -65,22 +65,22 @@ const SearchBooks = () => {
   };
 
   // create function to handle saving a book to our database
-  const handleSaveBook = async (event, book) => {
+  const handleSaveBook = (event, book) => {
     event.preventDefault();
     saveBook({ variables: { book } });
     if (loading) {
       return <div>Loading...</div>;
     }
-    if (!user?.username) {
-      return (
-        <h4>
-          You need to be logged in to save a book. Use the navigation links above to sign up or log in!
-        </h4>
-      );
-    }
+    // if (!user?.username) {
+    //   return (
+    //     <h4>
+    //       You need to be logged in to save a book. Use the navigation links above to sign up or log in!
+    //     </h4>
+      // );
+    };
 
     // find the book in `searchedBooks` state by the matching id
-    const bookToSave = searchedBooks.find((book) => book.bookId === bookId);
+    const bookToSave = searchedBooks.find((book) => book.bookId === book._Id);
 
     // get token
     const token = Auth.loggedIn() ? Auth.getToken() : null;
@@ -90,7 +90,7 @@ const SearchBooks = () => {
     }
 
     try {
-      const response = await saveBook(bookToSave, token);
+      const response = saveBook(bookToSave, token);
 
       if (!response.ok) {
         throw new Error("something went wrong!");
@@ -101,7 +101,7 @@ const SearchBooks = () => {
     } catch (err) {
       console.error(err);
     }
-  };
+
 
   return (
     <>
