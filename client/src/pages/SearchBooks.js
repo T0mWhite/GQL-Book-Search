@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Jumbotron,
   Container,
@@ -17,6 +17,8 @@ import { searchGoogleBooks } from "../utils/API";
 import Auth from "../utils/auth";
 import { getSavedBookIds } from "../utils/localStorage";
 
+const LOCAL_STORAGE_KEY = 'googleBookSearch.savedbooks'
+
 const SearchBooks = () => {
   // create state for holding returned google api data
   const [searchedBooks, setSearchedBooks] = useState([]);
@@ -28,6 +30,15 @@ const SearchBooks = () => {
 
   // set up useEffect hook to save `savedBookIds` list to localStorage on component unmount
   // learn more here: https://reactjs.org/docs/hooks-effect.html#effects-with-cleanup
+  
+  // useEffect(() => {
+  //   const savedBooksJSON = localStorage.getItem(LOCAL_STORAGE_KEY)
+  //   if (savedBooksJSON != null) setSavedBookIds(JSON.parse(savedBooksJSON))
+  // }, [])
+
+  useEffect(() => {
+    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(savedBookIds))
+  }, [savedBookIds])
 
   const [saveBook, { data, loading }] = useMutation(SAVE_BOOK);
   // const bookData = data?.books || [];
@@ -50,7 +61,7 @@ const SearchBooks = () => {
       const { items } = await response.json();
 
       console.log(items);
-      
+
       const bookData = items.map((book) => ({
         bookId: book.id,
         authors: book.volumeInfo.authors || ["No author to display"],
@@ -58,7 +69,7 @@ const SearchBooks = () => {
         description: book.volumeInfo.description,
         image: book.volumeInfo.imageLinks?.thumbnail || "",
       }));
-      
+
       console.log(bookData);
 
       setSearchedBooks(bookData);
@@ -76,12 +87,6 @@ const SearchBooks = () => {
     if (loading) {
       return <div>Loading...</div>;
     }
-    // if (!user?.username) {
-    //   return (
-    //     <h4>
-    //       You need to be logged in to save a book. Use the navigation links above to sign up or log in!
-    //     </h4>
-    // );
 
     try {
       console.log(book);
